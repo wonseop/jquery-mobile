@@ -110,6 +110,10 @@ $.widget( "mobile.selectmenu", $.mobile.selectmenu, {
 	},
 
 	_handleMenuPageHide: function() {
+
+		// After the dialog's done, we may want to trigger change if the value has actually changed
+		this._delayedTrigger();
+
 		// TODO centralize page removal binding / handling in the page plugin.
 		// Suggestion from @jblas to do refcounting
 		//
@@ -240,14 +244,16 @@ $.widget( "mobile.selectmenu", $.mobile.selectmenu, {
 						.toggleClass( "ui-checkbox-off", !option.selected );
 				}
 
-				// trigger change if value changed
-				if ( self.isMultiple || oldIndex !== newIndex ) {
-					self.select.trigger( "change" );
+				// if it's not a multiple select, trigger change after it has finished closing
+				if ( !self.isMultiple && oldIndex !== newIndex ) {
+					self._triggerChange = true;
 				}
 
+				// trigger change if it's a multiple select
 				// hide custom select for single selects only - otherwise focus clicked item
 				// We need to grab the clicked item the hard way, because the list may have been rebuilt
 				if ( self.isMultiple ) {
+					self.select.trigger( "change" );
 					self.list.find( "li:not(.ui-li-divider)" ).eq( newIndex )
 						.find( "a" ).first().focus();
 				}
@@ -263,7 +269,7 @@ $.widget( "mobile.selectmenu", $.mobile.selectmenu, {
 		this._on( this.menuPage, { pagehide: "_handleMenuPageHide" } );
 
 		// Events on the popup
-		this._on( this.listbox, { popupafterclose: "close" } );
+		this._on( this.listbox, { popupafterclose: "_popupClosed" } );
 
 		// Close button on small overlays
 		if ( this.isMultiple ) {
@@ -271,6 +277,18 @@ $.widget( "mobile.selectmenu", $.mobile.selectmenu, {
 		}
 
 		return this;
+	},
+
+	_popupClosed: function() {
+		this.close();
+		this._delayedTrigger();
+	},
+
+	_delayedTrigger: function() {
+		if ( this._triggerChange ) {
+			this.element.trigger( "change" );
+		}
+		this._triggerChange = false;
 	},
 
 	_isRebuildRequired: function() {
