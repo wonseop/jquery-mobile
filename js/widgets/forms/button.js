@@ -54,23 +54,7 @@ $.widget( "mobile.button", {
 	},
 
 	_enhance: function() {
-		this.element.wrap( this._button() );
-	},
-
-	_button: function() {
-		var options = this.options,
-			iconClasses = this._getIconClasses( this.options );
-
-		return $("<div class='ui-btn ui-input-btn" +
-			( options.wrapperClass ? " " + options.wrapperClass : "" ) +
-			( options.theme ? " ui-btn-" + options.theme : "" ) +
-			( options.corners ? " ui-corner-all" : "" ) +
-			( options.shadow ? " ui-shadow" : "" ) +
-			( options.inline ? " ui-btn-inline" : "" ) +
-			( options.mini ? " ui-mini" : "" ) +
-			( options.disabled ? " ui-state-disabled" : "" ) +
-			( iconClasses ? ( " " + iconClasses ) : "" ) +
-			"' >" + this.element.val() + "</div>" );
+		this.element.wrap( $( "<div class=\"ui-input-btn\">" + this.element.val() + "</div>" ).buttonMarkup( this.options, this.options.wrapperClass ) );
 	},
 
 	widget: function() {
